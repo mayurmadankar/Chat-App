@@ -19,6 +19,11 @@
       //socket code in js
       const socket = io.connect("http://localhost:2000");
 
+      const username = prompt("Enter your name");
+
+      //emit the username to the server -> join is the event name
+      socket.emit("join", username);
+
       //get the element
       const messageInput = document.getElementById("message-input");
       const messageList = document.getElementById("message-list");
@@ -32,16 +37,34 @@
 
           //add message to the list
           const messageElement = document.createElement("div");
-          messageElement.innerText = message;
+          messageElement.innerText = username + ":" + message;
           messageList.appendChild(messageElement);
 
           messageInput.value = "";
         }
       });
+      //display he message on UI
+      socket.on("load_messages", (messages) => {
+        messages.forEach((message) => {
+          const messageElement = document.createElement("div");
+
+          const date = new Date(message.timestamp);
+
+          messageElement.innerText =
+            date.toDateString() + // Corrected toDateString invocation
+            " - " +
+            message.username +
+            ": " +
+            message.message;
+          messageList.appendChild(messageElement);
+        });
+      });
+
       //Listen for broadcast message and add it to the list
-      socket.on("broadcast_message", (message) => {
+      socket.on("broadcast_message", (userMessage) => {
         const messageElement = document.createElement("div");
-        messageElement.innerText = message;
+        messageElement.innerText =
+          userMessage.username + ":" + userMessage.message;
         messageList.appendChild(messageElement);
       });
     </script>
